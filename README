@@ -1,0 +1,23 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=2642
+
+Complete member variable for PL/I filetype on mainframe, inlcude variables in copybooks.
+Currently support 2 types of copybook, e.g. normal copybook and maps in diffrent folders.
+
+Step 1
+Change .vimrc:
+let g:CpyCompleteInd     = 1            "Enable complete for copybook, other value will disable
+let g:CpyIdentification  = "CPY"        "Copybook Include Method
+let g:CpyDir             = "Folder1"    "Folder Of Copybook, Include The Last /
+let g:MapIdentification  = "MAP"        "Maps Include Method
+let g:MapDir             = "Folder2"    "Folder Of Maps, Include The Last /
+if has("autocmd")
+   au FileType pli setl cfu=plicomplete#Complete
+endif
+
+The Include Method should be change base on yours, 
+like %INCLUDE CPY(COPYBOOK); it should be CPY
+
+Step 2
+Press <C-X><C-U> after type one dot,the variables should be poped up.
+
+Screen Shot:http://photo1.bababian.com/upload13/20090505/F9FC04A492D5138A202EA67F368AF38F.jpg
