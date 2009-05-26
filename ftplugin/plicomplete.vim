@@ -1,15 +1,16 @@
 " Vim completion script
-" Language: PLI
-" Maintainer: Ricky Wu
-" Last Change: 2009-04-24
+" Language: PL/I
+" Maintainer: Ricky Wu <richiewu at live dot com>
+" Last Change: 2009-05-26
+" Version: 0.2
  
 " This function is used for the 'completefunc' option.
 function! plicomplete#Complete(findstart, base)
     if a:findstart
         " Locate the start of the item, including "."
-        let line = getline('.')
+        let line  = getline('.')
         let start = col('.') - 1
-        let end = -1
+        let end   = -1
         while start > 0
             if line[start - 1] =~ '\w'
                 let start -= 1
@@ -45,14 +46,14 @@ function! plicomplete#Complete(findstart, base)
         return []
     endif
  
-    let baseline  = line('.')
-    let lnum      = baseline
-    let endflag   = 1
-    let s:items = []
+    let baseline = line('.')
+    let lnum     = baseline
+    let endflag  = 1
+    let s:items  = []
     
     while endflag == 1
-        let lnum = lnum + 1
-        let line = getline(lnum)
+        let lnum  = lnum + 1
+        let line  = getline(lnum)
 
         "Skip if current line is 
         if line =~ '\s\+\/\*\s\+\d\+\s\+\w\+\s\+.*(.*).*\*\/'
@@ -61,20 +62,23 @@ function! plicomplete#Complete(findstart, base)
         
         "Copybooks include
         if line =~ '\s\+%INCLUDE\s\+.*(.*)\s*;'
-            if g:cpyInclude == 0
+            "Swith of CpyComplete
+            if g:CpyCompleteInd == 0 
                 continue
             endif
-            if exists("$LIB") == 0
+            if exists("g:CpyDir") == 0 
                 continue
             endif
-            let cpyname = s:cpyTrim(line)
+            let CpyName = s:CpyTrim(line)
 
-            if line =~ g:cpyident
-                let lib = g:cpylocation
-            elseif line =~ g:mapident
-                let lib = g:maplocation
+            "Asign file path for different include method
+            if line =~ g:CpyIdentification
+                let IncludeDir = g:CpyDir
+            elseif line =~ g:MapIdentification
+                let IncludeDir = g:MapDir
             endif
-            call s:cpyInclude(lib,cpyname)
+            let filepath = IncludeDir.CpyName
+            call s:CpyComplete(filepath)
 
             if getline(lnum + 1) !~ '\s\+\d\+\s\+.*(.*).*,'
                 let endflag = -1
@@ -82,7 +86,7 @@ function! plicomplete#Complete(findstart, base)
             endif
         "Normal definition line
         elseif line =~ '\s\+\d\+\s\+\w\+\s\+.*(.*)'
-            let item = s:itemTrim(line) 
+            let item = s:ItemTrim(line) 
             call add(s:items, item)
         endif
 
@@ -97,7 +101,7 @@ function! plicomplete#Complete(findstart, base)
 endfunc
 
 "Get variable item in definition
-function! s:itemTrim(line)
+function! s:ItemTrim(line)
         
     let line     = a:line
     let column   = 1
@@ -124,9 +128,9 @@ function! s:itemTrim(line)
 endfunc
 
 "Get copybooks name
-function! s:cpyTrim(line)
+function! s:CpyTrim(line)
 
-    let line = a:line
+    let line   = a:line
     let column = 1
 
     while column < 72
@@ -139,30 +143,29 @@ function! s:cpyTrim(line)
         endif
     endwhile
 
-    let cpyname = strpart(line, start, end - start + 1)
-    return cpyname
+    let CpyName = strpart(line, start, end - start + 1)
+    return CpyName
 
 endfunc
 
 "Get variables in copybooks
-function! s:cpyInclude(lib,cpyname)
-    let lib = a:lib
-    let cpyname = a:cpyname
-
-    if filereadable($LIB.lib.'\'.cpyname) == 0
+function! s:CpyComplete(filepath)
+    let filepath = a:filepath
+    if filereadable(filepath) == 0
         return
     endif
-    let fileloc = $LIB.lib.'\'.cpyname
 
-    for line in readfile(fileloc, '')
+    for line in readfile(filepath, '')
         if line =~ '\s\+\/\*\s\+\d\+\s\+\w\+\s\+.*(.*).*\*\/'
             continue
         endif
 
         if line =~ '\s\+\d\+\s\+\w\+\s\+.*(.*)'
-            let item = s:itemTrim(line) 
+            let item = s:ItemTrim(line) 
             call add(s:items, item)
         endif
     endfor
 
 endfunc
+
+" vim:ft=vim:fdm=marker
